@@ -1,39 +1,47 @@
 import pandas as pd
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
-
+import os
+print (os.getcwd())
+print (os.listdir())
 def main():
-    df = pd.read_csv('dash\WK_1-10.csv')  # Replace 'path_to_your_file' with the actual path
+    df = pd.read_csv('WK_1-10.csv')  # Replace 'path_to_your_file' with the actual path
     
     cols_to_sum = ['PASS_COMP', 'PASS_YDS', 'PASS_TD', 'RUSH_YDS', 'RUSH_TD', 'REC', 'REC_YARDS', 'REC_TD', 'TARGETS']
     all_columns = cols_to_sum + ['OPP']  # Include 'OPP' column
-    
+
     positions = df['POS'].unique()
+    #position dropdown
     dropdown_position = dcc.Dropdown(
         id='position-dropdown',
         options=[{'label': position, 'value': position} for position in positions],
         value=positions[0]  # Default value
     )
-    
+    #column checklist
     checklist_columns = dcc.Checklist(
         id='column-checklist',
         options=[{'label': col, 'value': col} for col in all_columns if col != 'OPP'],  # Exclude 'OPP'
         value=cols_to_sum  # Default value, initially show all cols_to_sum
     )
-    
+    #sort by dropdown
     sorting_dropdown = dcc.Dropdown(
         id='sorting-dropdown',
         options=[{'label': col, 'value': col} for col in cols_to_sum],
         value=cols_to_sum[0]  # Default value
     )
 
-    app = Dash(__name__)
-    app.layout = html.Div([
+    # create dash app and layout
+    external_css = ['assets/styles.css']  # Adjust the path according to your directory structure
+
+    app = Dash(__name__, external_stylesheets=external_css)
+
+    app.layout = html.Div(className='master-div', children=[
         html.H1('YRDS/TDs/ETC. allowed by Team filtered by Position'),
         html.Hr(),
         dropdown_position,
         checklist_columns,
         sorting_dropdown,
-        dash_table.DataTable(id='datatable', page_size=32)
+        dash_table.DataTable(id='datatable', page_size=32),
+        
     ])
     
     @app.callback(
